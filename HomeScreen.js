@@ -99,7 +99,12 @@ export default function HomeScreen({ navigation }) {
   // Main content rendering logic
   let mainContent;
   if (loading) {
-    mainContent = <ActivityIndicator size="large" color="#ff7043" style={{ marginTop: 40 }} />;
+   mainContent = (
+    <View style={{ alignItems: 'center', marginTop: 40 }}>
+      <Image source={require('./assets/logo.png')} style={{ width: 80, height: 80, marginBottom: 16 }} />
+      <ActivityIndicator size="large" color="#ff7043" />
+    </View>
+  );
   } else if (showCart) {
         const groupedCart = groupCartItems(cart);
         mainContent = (

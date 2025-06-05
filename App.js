@@ -34,7 +34,7 @@ export default function App() {
     // Show splash screen with logo and app name
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <Image source={require('./assets/icon.png')} style={{ width: 100, height: 100, marginBottom: 20 }} />
+        <Image source={require('./assets/logo.png')} style={{ width: 100, height: 100, marginBottom: 20 }} />
         <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#ff7043', marginBottom: 10 }}>QuickBite</Text>
         <ActivityIndicator size="large" color="#ff7043" />
       </View>

@@ -139,6 +139,7 @@ export default function MenuScreen({ route, navigation }) {
   if (loading) {
     return (
       <View style={styles.centered}>
+        <Image source={require('./assets/logo.png')} style={{ width: 80, height: 80, marginBottom: 16 }} />
         <ActivityIndicator size="large" color="#ff7043" />
       </View>
     );

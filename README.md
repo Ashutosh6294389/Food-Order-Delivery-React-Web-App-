@@ -1,16 +1,44 @@
-# FoodOrderingApp
+# QuickBite - Food Ordering App
 
-A React Native app for browsing restaurant menus, adding items to a cart, and placing orders.
+QuickBite is a React Native (Expo) application that allows users to browse restaurant menus, add items to a cart, place orders, and view past orders. The app uses Firebase for authentication and Firestore for data storage.
 
-## Prerequisites
+## Purpose
+
+The purpose of QuickBite is to provide a seamless food ordering experience, allowing users to:
+- Register and sign in securely
+- Browse a list of restaurants and their menus
+- Add food items to a cart (one restaurant at a time)
+- Place orders with delivery address and payment options
+- View and reorder from past orders
+- Access help and support
+
+## Features
+
+- **User Authentication:** Register and sign in with email and password.
+- **Restaurant Browsing:** View a list of available restaurants.
+- **Menu Viewing:** Browse menu items, filter by veg/non-veg, and search.
+- **Cart Management:** Add, remove, and update items in your cart.
+- **Order Placement:** Enter delivery address, select payment method, and place orders.
+- **Order History:** View past orders and reorder with a single tap.
+- **Help & Support:** Contact support via email, phone, or WhatsApp.
+
+## Getting Started
+
+### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v14 or higher)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 - [Expo CLI](https://docs.expo.dev/get-started/installation/)
 
-## Getting Started
+### Installation
 
-1. **Install dependencies:**
+1. **Clone the repository:**
+   ```sh
+   git clone <repository-url>
+   cd Food-Order-Delivery-React-Web-App-
+   ```
+
+2. **Install dependencies:**
    ```sh
    npm install
    ```
@@ -19,18 +47,20 @@ A React Native app for browsing restaurant menus, adding items to a cart, and pl
    yarn install
    ```
 
-2. **Start the development server:**
+3. **Start the development server:**
    ```sh
    npm start
+   ```
+   or
+   ```sh
+   yarn start --reset-cache
    ```
    or
    ```sh
    expo start
    ```
 
-3. **Run on your device:**
-   - Scan the QR code in the Expo DevTools with the Expo Go app.
-   - Or run on an emulator:
+4. **Run on your device:**
      ```sh
      npm run android
      npm run ios
@@ -39,19 +69,16 @@ A React Native app for browsing restaurant menus, adding items to a cart, and pl
 
 ## Project Structure
 
-- `App.js` - Entry point
-- `MenuScreen.js` - Menu and cart logic
+- `App.js` - Main app entry point and navigation
+- `HomeScreen.js` - Restaurant list and search
+- `MenuScreen.js` - Menu items and cart actions
+- `CartScreen.js` - Cart review and order placement
+- `PastOrdersScreen.js` - View and reorder past orders
+- `RegisterScreen.js` / `SignInScreen.js` - User authentication
+- `HelpSupportScreen.js` - Support contact options
 - `CartContext.js` - Cart state management
-- `RegisterScreen.js`, `SignInScreen.js`, `HomeScreen.js` - User flows
 - `firebase.js` - Firebase configuration
-
-## Scripts
-
-- `npm start` - Start Expo dev server
-- `npm run android` - Run on Android emulator/device
-- `npm run ios` - Run on iOS simulator/device
-- `npm run web` - Run in web browser
 
 ## License
 
-See [package.json](package.json) for license info.
+See [package.json](package.json) for license information.
