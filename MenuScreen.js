@@ -304,8 +304,11 @@ export default function MenuScreen({ route, navigation }) {
           renderItem={({ item }) => (
             <View style={styles.menuItemContainer}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.menuItem}>
-                  {item.name}
+                <Text style={styles.menuItemName}>
+                  {'\u2022'}{' '}
+                  {item.name
+                    ? item.name.charAt(0).toUpperCase() + item.name.slice(1)
+                    : ''}
                 </Text>
                 {item.price ? (
                   <Text style={{ color: '#ff7043', fontWeight: 'bold' }}>
@@ -482,4 +485,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
+  menuItemName: {
+  fontWeight: 'bold',
+  color: '#111',
+  fontSize: 18,
+  marginBottom: 2,
+  flexDirection: 'row',
+  alignItems: 'center',
+},
 });

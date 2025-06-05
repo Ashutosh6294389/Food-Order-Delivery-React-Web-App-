@@ -197,19 +197,49 @@ export default function CartScreen({ navigation }) {
           ))}
           <View style={styles.divider} />
           <Text style={styles.total}>Total: ₹{total.toFixed(2)}</Text>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <Text style={styles.sectionTitle}>Choose your payment option</Text>
           <View style={styles.paymentRow}>
             <TouchableOpacity
-              style={[styles.paymentOption, paymentMethod === 'cod' && styles.selectedPayment]}
-              onPress={() => setPaymentMethod('cod')}
+              style={[
+                styles.paymentOption,
+                paymentMethod === 'upi' && styles.selectedPayment
+              ]}
+              onPress={() => setPaymentMethod('upi')}
             >
-              <Text style={styles.paymentText}>Cash on Delivery</Text>
+              <Text style={[
+                styles.paymentText,
+                paymentMethod === 'upi' && styles.selectedPaymentText
+              ]}>
+                UPI
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.paymentOption, paymentMethod === 'online' && styles.selectedPayment]}
-              onPress={() => setPaymentMethod('online')}
+              style={[
+                styles.paymentOption,
+                paymentMethod === 'cod' && styles.selectedPayment
+              ]}
+              onPress={() => setPaymentMethod('cod')}
             >
-              <Text style={styles.paymentText}>Online Payment</Text>
+              <Text style={[
+                styles.paymentText,
+                paymentMethod === 'cod' && styles.selectedPaymentText
+              ]}>
+                Cash on Delivery
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.paymentOption,
+                paymentMethod === 'card' && styles.selectedPayment
+              ]}
+              onPress={() => setPaymentMethod('card')}
+            >
+              <Text style={[
+                styles.paymentText,
+                paymentMethod === 'card' && styles.selectedPaymentText
+              ]}>
+                Credit/Debit Card
+              </Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.placeOrderButton} onPress={handlePlaceOrder}>
@@ -288,4 +318,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
   },
+  paymentRow: {
+  flexDirection: 'row',
+  marginBottom: 16,
+  justifyContent: 'space-between',
+},
+paymentOption: {
+  flex: 1,
+  borderWidth: 1,
+  borderColor: '#43a047',
+  borderRadius: 8,
+  padding: 12,
+  marginHorizontal: 4,
+  alignItems: 'center',
+  backgroundColor: '#fff',
+},
+selectedPayment: {
+  backgroundColor: '#43a047',
+  borderColor: '#388e3c',
+},
+paymentText: {
+  color: '#43a047',
+  fontWeight: 'bold',
+  fontSize: 16,
+},
+selectedPaymentText: {
+  color: '#fff',
+},
 });
