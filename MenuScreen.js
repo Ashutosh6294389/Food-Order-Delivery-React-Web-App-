@@ -17,13 +17,21 @@ export default function MenuScreen({ route, navigation }) {
   const [searchText, setSearchText] = useState('');
   const [showCart, setShowCart] = useState(false);
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
+  const [vegFilter, setVegFilter] = useState('all');
 
   // Filter menu items by search text
-  const filteredMenu = searchText
-    ? menu.filter(item =>
-        item.name?.toLowerCase().includes(searchText.toLowerCase())
-      )
-    : menu;
+  const filteredMenu = menu.filter(item => {
+    const matchesSearch = searchText
+      ? item.name?.toLowerCase().includes(searchText.toLowerCase())
+      : true;
+    let matchesVeg = true;
+    if (vegFilter === 'veg') {
+      matchesVeg = item.isVeg === 1;
+    } else if (vegFilter === 'nonveg') {
+      matchesVeg = item.isVeg !== 1; // treat undefined/null/0 as non-veg
+    }
+    return matchesSearch && matchesVeg;
+  });
 
   // Header rendering logic
   const renderHeader = () => {
@@ -53,8 +61,11 @@ export default function MenuScreen({ route, navigation }) {
           <TouchableOpacity style={styles.iconButton} onPress={() => setShowSearch(true)}>
             <Feather name="search" size={28} color="#ff7043" />
           </TouchableOpacity>
-         <TouchableOpacity style={styles.iconButton} onPress={() => { setShowCart(true); setShowSearch(false); }}>
-            <Ionicons name="cart-outline" size={28} color="#ff7043" />
+         <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => navigation.navigate('CartScreen')}
+        >
+          <Ionicons name="cart-outline" size={28} color="#ff7043" />
         </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.profileButton} onPress={() => setProfileMenuVisible(true)}>
@@ -99,6 +110,7 @@ export default function MenuScreen({ route, navigation }) {
     const getItemCount = (itemId) => {
         return cart.filter(i => i.id === itemId).length;
     };
+
   const fetchMenu = async () => {
     setLoading(true);
     try {
@@ -146,6 +158,7 @@ export default function MenuScreen({ route, navigation }) {
 
 
   return (
+    <View style={{ flex: 1}}>
     <ScrollView style={styles.container}>
       {renderHeader()}
 
@@ -184,7 +197,13 @@ export default function MenuScreen({ route, navigation }) {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setProfileMenuVisible(false)}>
           <View style={styles.menu}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setProfileMenuVisible(false); /* Add navigation to Past Orders */ }}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setProfileMenuVisible(false);
+                setTimeout(() => navigation.navigate('PastOrders'), 300); // Delay to allow modal to close
+              }}
+            >
               <Feather name="list" size={20} color="#ff7043" style={{ marginRight: 10 }} />
               <Text style={styles.menuText}>Past Orders</Text>
             </TouchableOpacity>
@@ -216,12 +235,63 @@ export default function MenuScreen({ route, navigation }) {
             source={{ uri: CDN_URL + restaurant.cloudinaryImageId }}
             style={styles.restaurantImage}
           />
-          <Text style={styles.restaurantName}>{restaurant.name}</Text>
-          <Text style={styles.restaurantDetails}>{restaurant.cuisines?.join(', ')}</Text>
-          <Text style={styles.restaurantDetails}>⭐ {restaurant.avgRating} | {restaurant.areaName}</Text>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={styles.restaurantName}>{restaurant.name}</Text>
+            <Text style={styles.restaurantDetails}>{restaurant.cuisines?.join(', ')}</Text>
+            <Text style={styles.restaurantDetails}>⭐ {restaurant.avgRating} | {restaurant.areaName}</Text>
+            {restaurant.sla?.lastMileTravel && (
+              <Text style={styles.restaurantDetails}>
+                Distance: {restaurant.sla.lastMileTravel} km
+              </Text>
+            )}
+          </View>
         </View>
       )}
       <Text style={styles.menuTitle}>Menu</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: vegFilter === 'all' ? '#ff7043' : '#fff',
+              borderColor: '#ff7043',
+              borderWidth: 1,
+              borderRadius: 20,
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+              marginHorizontal: 4,
+            }}
+            onPress={() => setVegFilter('all')}
+          >
+            <Text style={{ color: vegFilter === 'all' ? '#fff' : '#ff7043', fontWeight: 'bold' }}>All</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: vegFilter === 'veg' ? '#43a047' : '#fff',
+              borderColor: '#43a047',
+              borderWidth: 1,
+              borderRadius: 20,
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+              marginHorizontal: 4,
+            }}
+            onPress={() => setVegFilter('veg')}
+          >
+            <Text style={{ color: vegFilter === 'veg' ? '#fff' : '#43a047', fontWeight: 'bold' }}>Veg</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              backgroundColor: vegFilter === 'nonveg' ? '#b71c1c' : '#fff',
+              borderColor: '#b71c1c',
+              borderWidth: 1,
+              borderRadius: 20,
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+              marginHorizontal: 4,
+            }}
+            onPress={() => setVegFilter('nonveg')}
+          >
+            <Text style={{ color: vegFilter === 'nonveg' ? '#fff' : '#b71c1c', fontWeight: 'bold' }}>Non-Veg</Text>
+          </TouchableOpacity>
+        </View>
       {filteredMenu.length === 0 ? (
         <Text style={styles.menuItem}>No menu items found.</Text>
       ) : (
@@ -230,21 +300,38 @@ export default function MenuScreen({ route, navigation }) {
           keyExtractor={item => item.id}
           renderItem={({ item }) => (
             <View style={styles.menuItemContainer}>
-              <Text style={styles.menuItem}>
-                {item.name} {item.price ? `- ₹${(item.price / 100).toFixed(2)}` : ''}
-              </Text>
-              <View style={styles.counterContainer}>
-                <TouchableOpacity
-                  onPress={() => removeFromCart(item.id)}
-                  style={styles.plusButton}
-                  disabled={getItemCount(item.id) === 0}
-                >
-                  <Ionicons name="remove-circle" size={28} color={getItemCount(item.id) === 0 ? "#ccc" : "#ff7043"} />
-                </TouchableOpacity>
-                <Text style={styles.counterText}>{getItemCount(item.id)}</Text>
-                <TouchableOpacity onPress={() => handleAddToCart(item)} style={styles.plusButton}>
-                  <Ionicons name="add-circle" size={28} color="#ff7043" />
-                </TouchableOpacity>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.menuItem}>
+                  {item.name}
+                </Text>
+                {item.price ? (
+                  <Text style={{ color: '#ff7043', fontWeight: 'bold' }}>
+                    ₹{(item.price / 100).toFixed(2)}
+                  </Text>
+                ) : null}
+                {item.description ? (
+                  <Text style={{ color: '#666', fontSize: 14, fontWeight: 'bold' }}>
+                    {item.description}
+                  </Text>
+                ) : null}
+                {item.ratings?.aggregatedRating?.rating ? (
+                  <Text style={{ color: '#388e3c', fontWeight: 'bold', marginBottom: 2 }}>
+                    ⭐ {item.ratings.aggregatedRating.rating}
+                  </Text>
+                ) : null}
+                <View style={styles.counterContainer}>
+                  <TouchableOpacity
+                    onPress={() => removeFromCart(item.id)}
+                    style={styles.plusButton}
+                    disabled={getItemCount(item.id) === 0}
+                  >
+                    <Ionicons name="remove-circle" size={28} color={getItemCount(item.id) === 0 ? "#ccc" : "#ff7043"} />
+                  </TouchableOpacity>
+                  <Text style={styles.counterText}>{getItemCount(item.id)}</Text>
+                  <TouchableOpacity onPress={() => handleAddToCart(item)} style={styles.plusButton}>
+                    <Ionicons name="add-circle" size={28} color="#ff7043" />
+                  </TouchableOpacity>
+                </View>
               </View>
               {item.imageId ? (
                 <Image
@@ -257,6 +344,16 @@ export default function MenuScreen({ route, navigation }) {
         />
       )}
     </ScrollView>
+    {cart.length > 0 && (
+      <TouchableOpacity
+        style={styles.checkoutButton}
+        onPress={() => navigation.navigate('CartScreen')}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+      </TouchableOpacity>
+    )}
+    </View>
   );
 }
 
@@ -268,9 +365,31 @@ const styles = StyleSheet.create({
   restaurantName: { fontSize: 24, fontWeight: 'bold', color: '#ff7043', marginBottom: 4 },
   restaurantDetails: { fontSize: 16, color: '#555', marginBottom: 2 },
   menuTitle: { fontSize: 22, fontWeight: 'bold', margin: 16, color: '#333' },
-  menuItemContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 16, marginVertical: 8 },
-  menuItem: { fontSize: 18, color: '#333', flex: 1 },
-  menuImage: { width: 60, height: 60, borderRadius: 8, marginLeft: 12 },
+  menuItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginVertical: 8,
+    backgroundColor: '#fff7f0',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ffe0cc',
+    // Shadow for iOS
+    shadowColor: '#ff7043',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    // Elevation for Android
+    elevation: 4,
+  },
+  menuItem: { fontSize: 18, color: '#000', flex: 1, fontWeight: 'bold' },
+  menuImage: { 
+    width: 80, 
+    height: 80, 
+    borderRadius: 8, 
+    marginLeft: 12 
+  },
   counterContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 },
   counterText: { fontSize: 18, marginHorizontal: 6, minWidth: 20, textAlign: 'center' },
   plusButton: { marginLeft: 2 },
@@ -311,5 +430,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     marginRight: 12,
+  },
+  checkoutButton: {
+    position: 'absolute',
+    right: 24,
+    bottom: 32,
+    backgroundColor: '#43a047',
+    borderRadius: 30,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 100,
+  },
+  checkoutButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+    letterSpacing: 1,
   },
 });

@@ -85,7 +85,10 @@ export default function HomeScreen({ navigation }) {
             }}>
             <Feather name="home" size={28} color="#ff7043" />
             </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} onPress={() => { setShowCart(true); setShowSearch(false); }}>
+            <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('CartScreen')}
+          >
             <Ionicons name="cart-outline" size={28} color="#ff7043" />
           </TouchableOpacity>
         </View>
