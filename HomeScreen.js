@@ -3,7 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable, TextInput, 
 import { Ionicons, MaterialIcons, Feather } from '@expo/vector-icons';
 import { useCart } from './CartContext';
 import { signOut } from 'firebase/auth';
-import { auth } from './firebase';
+import { db, auth } from './firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 const CDN_URL = "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/";
 const IMG_URL = "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_300,h_300,c_fit/";
@@ -27,15 +28,11 @@ export default function HomeScreen({ navigation }) {
   const fetchRestaurants = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://www.swiggy.com/dapi/restaurants/list/v5?lat=19.0759837&lng=72.8776559&is-seo-homepage-enabled=true&page_type=DESKTOP_WEB_LISTING"
-      );
-      const json = await response.json();
-      const cards = json?.data?.cards || [];
-      const restaurantCard = cards.find(card =>
-        card?.card?.card?.gridElements?.infoWithStyle?.restaurants
-      );
-      const fetchedRestaurants = restaurantCard?.card?.card?.gridElements?.infoWithStyle?.restaurants || [];
+      const querySnapshot = await getDocs(collection(db, 'restaurants'));
+      const fetchedRestaurants = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setRestaurants(fetchedRestaurants);
     } catch (e) {
       setRestaurants([]);
@@ -46,7 +43,7 @@ export default function HomeScreen({ navigation }) {
   // Filter restaurants by search text
   const filteredResults = searchText
     ? restaurants.filter(item =>
-        item.info?.name?.toLowerCase().includes(searchText.toLowerCase())
+        item.name?.toLowerCase().includes(searchText.toLowerCase())
       )
     : restaurants;
 
@@ -123,24 +120,24 @@ export default function HomeScreen({ navigation }) {
     mainContent = (
       <FlatList
         data={filteredResults}
-        keyExtractor={item => item.info.id}
+        keyExtractor={item => item.id}
         numColumns={2}
         renderItem={({ item }) => (
             <TouchableOpacity
                 style={[styles.resultItem, { flex: 1 }]}
-                onPress={() => navigation.navigate('MenuScreen', { restaurantId: item.info.id })}
+                onPress={() => navigation.navigate('MenuScreen', { restaurantId: item.id })}
             >
                 <Image
-                source={{ uri: IMG_URL + item.info.cloudinaryImageId }}
-                style={{ width: 100, height: 100, borderRadius: 8, marginBottom: 8 }}
-                resizeMode="cover"
+                  source={{ uri: item.imageUrl || (item.cloudinaryImageId ? CDN_URL + item.cloudinaryImageId : IMG_URL) }}
+                  style={{ width: 100, height: 100, borderRadius: 8, marginBottom: 8 }}
+                  resizeMode="cover"
                 />
                 <Text style={styles.resultText}>
-                [{item.info.name}]
+                  [{item.name}]
                 </Text>
-                <Text style={{ color: '#888', fontSize: 14 }}>{item.info.cuisines?.join(', ')}</Text>
-                <Text style={{ color: '#888', fontSize: 14 }}>⭐ {item.info.avgRating}</Text>
-            </TouchableOpacity>
+                <Text style={{ color: '#888', fontSize: 14 }}>{item.cuisines?.join(', ')}</Text>
+                <Text style={{ color: '#888', fontSize: 14 }}>⭐ {item.avgRating}</Text>
+              </TouchableOpacity>
             )}
         ListEmptyComponent={<Text style={styles.resultText}>No results found.</Text>}
       />
