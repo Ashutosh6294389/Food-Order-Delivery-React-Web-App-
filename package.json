@@ -2,6 +2,7 @@
   "name": "foodorderingapp",
   "license": "0BSD",
   "version": "1.0.0",
+  "proxy": "https://www.swiggy.com",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

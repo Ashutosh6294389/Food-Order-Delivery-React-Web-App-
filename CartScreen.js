@@ -20,39 +20,6 @@ function groupCartItems(cart) {
   return Object.values(map);
 }
 
-const handlePlaceOrder = async () => {
-  if (!location) {
-    Alert.alert('Location required', 'Please allow location access for delivery.');
-    return;
-  }
-  if (!houseNo.trim() || !area.trim()) {
-    Alert.alert('Please enter your house number and area.');
-    return;
-  }
-  try {
-    // Save order to Firestore
-    await addDoc(collection(db, 'orders'), {
-      userId: auth.currentUser.uid,
-      items: groupedCart,
-      total,
-      address: {
-        houseNo,
-        area,
-        landmark,
-        address,
-        location,
-      },
-      paymentMethod,
-      createdAt: serverTimestamp(),
-    });
-    clearCart();
-    Alert.alert('Order Placed!', 'Your order has been placed successfully.', [
-      { text: 'OK', onPress: () => navigation.navigate('Home') }
-    ]);
-  } catch (e) {
-    Alert.alert('Order Failed', 'Could not place order. Please try again.');
-  }
-};
 
 export default function CartScreen({ navigation }) {
   const { cart, addToCart, removeFromCart, clearCart, restaurantId } = useCart();
@@ -94,20 +61,49 @@ export default function CartScreen({ navigation }) {
     }
     }, []);
 
-  const handlePlaceOrder = () => {
-    if (!location) {
-      Alert.alert('Location required', 'Please allow location access for delivery.');
-      return;
-    }
-    if (!houseNo.trim() || !area.trim()) {
-      Alert.alert('Please enter your house number and area.');
-      return;
-    }
+  const handlePlaceOrder = async () => {
+  console.log('DEBUG PlaceOrder', {
+    platform: Platform.OS,
+    location,
+    houseNo,
+    area,
+    user: auth.currentUser,
+    groupedCart,
+    total
+  });
+
+  if (Platform.OS !== 'web' && !location) {
+    Alert.alert('Location required', 'Please allow location access for delivery.');
+    return;
+  }
+  if (!houseNo.trim() || !area.trim()) {
+    Alert.alert('Please enter your house number and area.');
+    return;
+  }
+  try {
+    await addDoc(collection(db, 'orders'), {
+      userId: auth.currentUser.uid,
+      items: groupedCart,
+      total,
+      address: {
+        houseNo,
+        area,
+        landmark,
+        address,
+        location,
+      },
+      paymentMethod,
+      createdAt: serverTimestamp(),
+    });
     clearCart();
     Alert.alert('Order Placed!', 'Your order has been placed successfully.', [
       { text: 'OK', onPress: () => navigation.navigate('Home') }
     ]);
-  };
+  } catch (e) {
+    console.log('Order Failed', e);
+    Alert.alert('Order Failed', 'Could not place order. Please try again.');
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

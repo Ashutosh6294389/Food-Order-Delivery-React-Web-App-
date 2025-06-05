@@ -160,11 +160,20 @@ export default function HomeScreen({ navigation }) {
       >
         <Pressable style={styles.modalOverlay} onPress={() => setProfileMenuVisible(false)}>
           <View style={styles.menu}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setProfileMenuVisible(false); /* Add navigation to Past Orders */ }}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setProfileMenuVisible(false);
+                setTimeout(() => navigation.navigate('PastOrders'), 300); // Delay to allow modal to close
+              }}
+            >
               <Feather name="list" size={20} color="#ff7043" style={{ marginRight: 10 }} />
               <Text style={styles.menuText}>Past Orders</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setProfileMenuVisible(false); /* Add navigation to Help & Support */ }}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { 
+                setProfileMenuVisible(false); 
+                setTimeout(() => navigation.navigate('HelpSupport'), 300);
+                /* Add navigation to Help & Support */ }}>
               <Feather name="help-circle" size={20} color="#ff7043" style={{ marginRight: 10 }} />
               <Text style={styles.menuText}>Help & Support</Text>
             </TouchableOpacity>

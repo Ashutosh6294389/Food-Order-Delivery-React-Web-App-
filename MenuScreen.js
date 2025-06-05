@@ -159,6 +159,48 @@ export default function MenuScreen({ route, navigation }) {
 
   return (
     <View style={{ flex: 1}}>
+      {/* Profile Menu Modal */}
+      <Modal
+        transparent
+        visible={profileMenuVisible}
+        animationType="fade"
+        onRequestClose={() => setProfileMenuVisible(false)}
+      >
+        <Pressable style={styles.modalOverlay} onPress={() => setProfileMenuVisible(false)}>
+          <View style={styles.menu}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                setProfileMenuVisible(false);
+                setTimeout(() => navigation.navigate('PastOrders'), 300); // Delay to allow modal to close
+              }}
+            >
+              <Feather name="list" size={20} color="#ff7043" style={{ marginRight: 10 }} />
+              <Text style={styles.menuText}>Past Orders</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.menuItem} onPress={() => { 
+               setProfileMenuVisible(false);
+               setTimeout(() => navigation.navigate('HelpSupport'), 300);
+               /* Add navigation to Help & Support */ }}>
+              <Feather name="help-circle" size={20} color="#ff7043" style={{ marginRight: 10 }} />
+              <Text style={styles.menuText}>Help & Support</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.menuItem}
+                onPress={async () => {
+                    await signOut(auth);
+                    navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'SignIn' }],
+                    });
+                }}
+                >
+                <MaterialIcons name="logout" size={20} color="#ff7043" style={{ marginRight: 10 }} />
+                <Text style={styles.menuText}>Sign Out</Text>
+                </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
     <ScrollView style={styles.container}>
       {renderHeader()}
 
@@ -188,45 +230,6 @@ export default function MenuScreen({ route, navigation }) {
         </Pressable>
       </Modal>
 
-      {/* Profile Menu Modal */}
-      <Modal
-        transparent
-        visible={profileMenuVisible}
-        animationType="fade"
-        onRequestClose={() => setProfileMenuVisible(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setProfileMenuVisible(false)}>
-          <View style={styles.menu}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                setProfileMenuVisible(false);
-                setTimeout(() => navigation.navigate('PastOrders'), 300); // Delay to allow modal to close
-              }}
-            >
-              <Feather name="list" size={20} color="#ff7043" style={{ marginRight: 10 }} />
-              <Text style={styles.menuText}>Past Orders</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setProfileMenuVisible(false); /* Add navigation to Help & Support */ }}>
-              <Feather name="help-circle" size={20} color="#ff7043" style={{ marginRight: 10 }} />
-              <Text style={styles.menuText}>Help & Support</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.menuItem}
-                onPress={async () => {
-                    await signOut(auth);
-                    navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'SignIn' }],
-                    });
-                }}
-                >
-                <MaterialIcons name="logout" size={20} color="#ff7043" style={{ marginRight: 10 }} />
-                <Text style={styles.menuText}>Sign Out</Text>
-                </TouchableOpacity>
-          </View>
-        </Pressable>
-      </Modal>
 
       {/* ...existing restaurant and menu rendering code... */}
       {restaurant && (
@@ -383,7 +386,15 @@ const styles = StyleSheet.create({
     // Elevation for Android
     elevation: 4,
   },
-  menuItem: { fontSize: 18, color: '#000', flex: 1, fontWeight: 'bold' },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+  },
+  menuText: {
+    fontSize: 16,
+    color: '#333',
+  },
   menuImage: { 
     width: 80, 
     height: 80, 
@@ -451,5 +462,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
     letterSpacing: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end', // <-- this aligns the menu to the right
+  },
+  menu: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginTop: 60,
+    marginRight: 16,
+    paddingVertical: 8,
+    width: 200,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
 });
