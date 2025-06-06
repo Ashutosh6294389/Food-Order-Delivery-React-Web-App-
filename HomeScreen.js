@@ -67,7 +67,13 @@ export default function HomeScreen({ navigation }) {
     }
     return (
       <View style={styles.header}>
-        <Text style={styles.appName}>QuickBite</Text>
+        <Text
+          style={styles.appName}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          QuickBite
+        </Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.iconButton} onPress={() => { setShowSearch(true); setShowCart(false); }}>
             <Feather name="search" size={28} color="#ff7043" />
@@ -221,12 +227,14 @@ const styles = StyleSheet.create({
     color: '#ff7043',
     letterSpacing: 2,
     flex: 1,
+    flexShrink: 1, // Prevents wrapping
+    minWidth: 0,   // Allows shrinking
   },
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 2,
+    flex: 0,
   },
   iconButton: {
     marginHorizontal: 8,

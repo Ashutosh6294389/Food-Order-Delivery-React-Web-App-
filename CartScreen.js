@@ -62,15 +62,6 @@ export default function CartScreen({ navigation }) {
     }, []);
 
   const handlePlaceOrder = async () => {
-  console.log('DEBUG PlaceOrder', {
-    platform: Platform.OS,
-    location,
-    houseNo,
-    area,
-    user: auth.currentUser,
-    groupedCart,
-    total
-  });
 
   if (Platform.OS !== 'web' && !location) {
     Alert.alert('Location required', 'Please allow location access for delivery.');
@@ -114,6 +105,8 @@ export default function CartScreen({ navigation }) {
         <>
           {/* Map and location details */}
           <Text style={styles.sectionTitle}>Delivery Location</Text>
+          {/* Hide the map component */}
+          {/* 
           {Platform.OS !== 'web' && location && MapViewComponent && MarkerComponent ? (
             <MapViewComponent
                 style={styles.map}
@@ -134,6 +127,9 @@ export default function CartScreen({ navigation }) {
                 {locationError || (Platform.OS === 'web' ? 'Map not supported on web.' : 'Fetching location...')}
             </Text>
             )}
+          */}
+          {/* Optionally, show nothing or a simple message */}
+          {/* <Text style={{ color: '#888', marginBottom: 8 }}>Map is hidden.</Text> */}
           <TextInput
             style={styles.input}
             placeholder="House / Flat No."

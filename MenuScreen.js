@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ActivityIndicator, FlatList, Image, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal, Pressable } from 'react-native';
+import { View, Text, ActivityIndicator, FlatList, Image, StyleSheet, TouchableOpacity, TextInput, Modal, Pressable } from 'react-native';
 import { useCart } from './CartContext';
 import { Alert, Button } from 'react-native';
 import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase';
 
 const MENU_API = "https://www.swiggy.com/dapi/menu/pl?page-type=REGULAR_MENU&complete-menu=true&lat=19.0759837&lng=72.8776559&restaurantId=";
 const CDN_URL = "https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy,f_auto,q_auto,w_660/";
@@ -12,7 +14,7 @@ export default function MenuScreen({ route, navigation }) {
   const [menu, setMenu] = useState([]);
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { cart ,addToCart, replaceCart, restaurantId: cartRestaurantId, removeFromCart} = useCart();
+  const { cart, addToCart, replaceCart, restaurantId: cartRestaurantId, removeFromCart } = useCart();
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [showCart, setShowCart] = useState(false);
@@ -53,7 +55,13 @@ export default function MenuScreen({ route, navigation }) {
     }
     return (
       <View style={styles.header}>
-        <Text style={styles.appName}>QuickBite</Text>
+        <Text 
+        style={styles.appName}
+        numberOfLines={1} 
+        ellipsizeMode="tail"
+        >
+          QuickBite
+          </Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Home')}>
             <Feather name="home" size={28} color="#ff7043" />
@@ -61,15 +69,15 @@ export default function MenuScreen({ route, navigation }) {
           <TouchableOpacity style={styles.iconButton} onPress={() => setShowSearch(true)}>
             <Feather name="search" size={28} color="#ff7043" />
           </TouchableOpacity>
-         <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => navigation.navigate('CartScreen')}
-        >
-          <Ionicons name="cart-outline" size={28} color="#ff7043" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate('CartScreen')}
+          >
+            <Ionicons name="cart-outline" size={28} color="#ff7043" />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.profileButton} onPress={() => setProfileMenuVisible(true)}>
-             <MaterialIcons name="account-circle" size={32} color="#ff7043" />
+          <MaterialIcons name="account-circle" size={32} color="#ff7043" />
         </TouchableOpacity>
       </View>
     );
@@ -77,39 +85,31 @@ export default function MenuScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchMenu();
+    // eslint-disable-next-line
   }, []);
 
   const handleAddToCart = (item) => {
-  if (!restaurant || !restaurant.id) {
-    Alert.alert("Please wait", "Restaurant details are loading.");
-    return;
-  }
-  const result = addToCart(item, restaurant.id); // restaurant.id must match context
-  if (result.conflict) {
-    console.log('Showing conflict alert');
-    Alert.alert(
-      "Switch Restaurant?",
-      "You can only order from one restaurant at a time.\n\nAdding this item will remove all items from your current cart. Do you want to continue?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => {},
-        },
-        {
-          text: "Okay",
-          style: "destructive",
-          onPress: () => replaceCart(item, restaurant.id),
-        },
-      ],
-      { cancelable: true }
-    );
-  }
-};
+    if (!restaurant || !restaurant.id) {
+      Alert.alert("Please wait", "Restaurant details are loading.");
+      return;
+    }
+    const result = addToCart(item, restaurant.id);
+    if (result.conflict) {
+      Alert.alert(
+        "Switch Restaurant?",
+        "You can only order from one restaurant at a time.\n\nAdding this item will remove all items from your current cart. Do you want to continue?",
+        [
+          { text: "Cancel", style: "cancel", onPress: () => {} },
+          { text: "Okay", style: "destructive", onPress: () => replaceCart(item, restaurant.id) },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
 
-    const getItemCount = (itemId) => {
-        return cart.filter(i => i.id === itemId).length;
-    };
+  const getItemCount = (itemId) => {
+    return cart.filter(i => i.id === itemId).length;
+  };
 
   const fetchMenu = async () => {
     setLoading(true);
@@ -157,9 +157,8 @@ export default function MenuScreen({ route, navigation }) {
     return Object.values(map);
   }
 
-
   return (
-    <View style={{ flex: 1}}>
+    <View style={{ flex: 1 }}>
       {/* Profile Menu Modal */}
       <Modal
         transparent
@@ -173,37 +172,35 @@ export default function MenuScreen({ route, navigation }) {
               style={styles.menuItem}
               onPress={() => {
                 setProfileMenuVisible(false);
-                setTimeout(() => navigation.navigate('PastOrders'), 300); // Delay to allow modal to close
+                setTimeout(() => navigation.navigate('PastOrders'), 300);
               }}
             >
               <Feather name="list" size={20} color="#ff7043" style={{ marginRight: 10 }} />
               <Text style={styles.menuText}>Past Orders</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { 
-               setProfileMenuVisible(false);
-               setTimeout(() => navigation.navigate('HelpSupport'), 300);
-               /* Add navigation to Help & Support */ }}>
+            <TouchableOpacity style={styles.menuItem} onPress={() => {
+              setProfileMenuVisible(false);
+              setTimeout(() => navigation.navigate('HelpSupport'), 300);
+            }}>
               <Feather name="help-circle" size={20} color="#ff7043" style={{ marginRight: 10 }} />
               <Text style={styles.menuText}>Help & Support</Text>
             </TouchableOpacity>
             <TouchableOpacity
-                style={styles.menuItem}
-                onPress={async () => {
-                    await signOut(auth);
-                    navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'SignIn' }],
-                    });
-                }}
-                >
-                <MaterialIcons name="logout" size={20} color="#ff7043" style={{ marginRight: 10 }} />
-                <Text style={styles.menuText}>Sign Out</Text>
-                </TouchableOpacity>
+              style={styles.menuItem}
+              onPress={async () => {
+                await signOut(auth);
+                navigation.reset({
+                  index: 0,
+                  routes: [{ name: 'SignIn' }],
+                });
+              }}
+            >
+              <MaterialIcons name="logout" size={20} color="#ff7043" style={{ marginRight: 10 }} />
+              <Text style={styles.menuText}>Sign Out</Text>
+            </TouchableOpacity>
           </View>
         </Pressable>
       </Modal>
-    <ScrollView style={styles.container}>
-      {renderHeader()}
 
       {/* Cart Modal */}
       <Modal
@@ -231,143 +228,155 @@ export default function MenuScreen({ route, navigation }) {
         </Pressable>
       </Modal>
 
-
-      {/* ...existing restaurant and menu rendering code... */}
-      {restaurant && (
-        <View style={styles.header}>
-          <Image
-            source={{ uri: CDN_URL + restaurant.cloudinaryImageId }}
-            style={styles.restaurantImage}
-          />
-          <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.restaurantName}>{restaurant.name}</Text>
-            <Text style={styles.restaurantDetails}>{restaurant.cuisines?.join(', ')}</Text>
-            <Text style={styles.restaurantDetails}>⭐ {restaurant.avgRating} | {restaurant.areaName}</Text>
-            {restaurant.sla?.lastMileTravel && (
-              <Text style={styles.restaurantDetails}>
-                Distance: {restaurant.sla.lastMileTravel} km
-              </Text>
-            )}
-          </View>
-        </View>
-      )}
-      <Text style={styles.menuTitle}>Menu</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
-          <TouchableOpacity
-            style={{
-              backgroundColor: vegFilter === 'all' ? '#ff7043' : '#fff',
-              borderColor: '#ff7043',
-              borderWidth: 1,
-              borderRadius: 20,
-              paddingVertical: 6,
-              paddingHorizontal: 16,
-              marginHorizontal: 4,
-            }}
-            onPress={() => setVegFilter('all')}
-          >
-            <Text style={{ color: vegFilter === 'all' ? '#fff' : '#ff7043', fontWeight: 'bold' }}>All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              backgroundColor: vegFilter === 'veg' ? '#43a047' : '#fff',
-              borderColor: '#43a047',
-              borderWidth: 1,
-              borderRadius: 20,
-              paddingVertical: 6,
-              paddingHorizontal: 16,
-              marginHorizontal: 4,
-            }}
-            onPress={() => setVegFilter('veg')}
-          >
-            <Text style={{ color: vegFilter === 'veg' ? '#fff' : '#43a047', fontWeight: 'bold' }}>Veg</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              backgroundColor: vegFilter === 'nonveg' ? '#b71c1c' : '#fff',
-              borderColor: '#b71c1c',
-              borderWidth: 1,
-              borderRadius: 20,
-              paddingVertical: 6,
-              paddingHorizontal: 16,
-              marginHorizontal: 4,
-            }}
-            onPress={() => setVegFilter('nonveg')}
-          >
-            <Text style={{ color: vegFilter === 'nonveg' ? '#fff' : '#b71c1c', fontWeight: 'bold' }}>Non-Veg</Text>
-          </TouchableOpacity>
-        </View>
-      {filteredMenu.length === 0 ? (
-        <Text style={styles.menuItem}>No menu items found.</Text>
-      ) : (
-        <FlatList
-          data={filteredMenu}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.menuItemContainer}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.menuItemName}>
-                  {'\u2022'}{' '}
-                  {item.name
-                    ? item.name.charAt(0).toUpperCase() + item.name.slice(1)
-                    : ''}
-                </Text>
-                {item.price ? (
-                  <Text style={{ color: '#ff7043', fontWeight: 'bold' }}>
-                    ₹{(item.price / 100).toFixed(2)}
-                  </Text>
-                ) : null}
-                {item.description ? (
-                  <Text style={{ color: '#666', fontSize: 14, fontWeight: 'bold' }}>
-                    {item.description}
-                  </Text>
-                ) : null}
-                {item.ratings?.aggregatedRating?.rating ? (
-                  <Text style={{ color: '#388e3c', fontWeight: 'bold', marginBottom: 2 }}>
-                    ⭐ {item.ratings.aggregatedRating.rating}
-                  </Text>
-                ) : null}
-                <View style={styles.counterContainer}>
-                  <TouchableOpacity
-                    onPress={() => removeFromCart(item.id)}
-                    style={styles.plusButton}
-                    disabled={getItemCount(item.id) === 0}
-                  >
-                    <Ionicons name="remove-circle" size={28} color={getItemCount(item.id) === 0 ? "#ccc" : "#ff7043"} />
-                  </TouchableOpacity>
-                  <Text style={styles.counterText}>{getItemCount(item.id)}</Text>
-                  <TouchableOpacity onPress={() => handleAddToCart(item)} style={styles.plusButton}>
-                    <Ionicons name="add-circle" size={28} color="#ff7043" />
-                  </TouchableOpacity>
+      <FlatList
+        data={filteredMenu}
+        keyExtractor={(item, index) => `${item.id || 'item'}-${index}`}
+        ListHeaderComponent={
+          <View>
+            {renderHeader()}
+            {restaurant && (
+              <View style={styles.restaurantHeader}>
+                <Image
+                  source={{ uri: CDN_URL + restaurant.cloudinaryImageId }}
+                  style={styles.restaurantImage}
+                />
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.restaurantName}>{restaurant.name}</Text>
+                  <Text style={styles.restaurantDetails}>{restaurant.cuisines?.join(', ')}</Text>
+                  <Text style={styles.restaurantDetails}>⭐ {restaurant.avgRating} | {restaurant.areaName}</Text>
+                  {restaurant.sla?.lastMileTravel && (
+                    <Text style={styles.restaurantDetails}>
+                      Distance: {restaurant.sla.lastMileTravel} km
+                    </Text>
+                  )}
                 </View>
               </View>
-              {item.imageId ? (
-                <Image
-                  source={{ uri: CDN_URL + item.imageId }}
-                  style={styles.menuImage}
-                />
-              ) : null}
+            )}
+            <Text style={styles.menuTitle}>Menu</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 8 }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: vegFilter === 'all' ? '#ff7043' : '#fff',
+                  borderColor: '#ff7043',
+                  borderWidth: 1,
+                  borderRadius: 20,
+                  paddingVertical: 6,
+                  paddingHorizontal: 16,
+                  marginHorizontal: 4,
+                }}
+                onPress={() => setVegFilter('all')}
+              >
+                <Text style={{ color: vegFilter === 'all' ? '#fff' : '#ff7043', fontWeight: 'bold' }}>All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: vegFilter === 'veg' ? '#43a047' : '#fff',
+                  borderColor: '#43a047',
+                  borderWidth: 1,
+                  borderRadius: 20,
+                  paddingVertical: 6,
+                  paddingHorizontal: 16,
+                  marginHorizontal: 4,
+                }}
+                onPress={() => setVegFilter('veg')}
+              >
+                <Text style={{ color: vegFilter === 'veg' ? '#fff' : '#43a047', fontWeight: 'bold' }}>Veg</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: vegFilter === 'nonveg' ? '#b71c1c' : '#fff',
+                  borderColor: '#b71c1c',
+                  borderWidth: 1,
+                  borderRadius: 20,
+                  paddingVertical: 6,
+                  paddingHorizontal: 16,
+                  marginHorizontal: 4,
+                }}
+                onPress={() => setVegFilter('nonveg')}
+              >
+                <Text style={{ color: vegFilter === 'nonveg' ? '#fff' : '#b71c1c', fontWeight: 'bold' }}>Non-Veg</Text>
+              </TouchableOpacity>
             </View>
-          )}
-        />
+            {filteredMenu.length === 0 && (
+              <Text style={styles.menuItem}>No menu items found.</Text>
+            )}
+          </View>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.menuItemContainer}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.menuItemName}>
+                {'\u2022'}{' '}
+                {item.name
+                  ? item.name.charAt(0).toUpperCase() + item.name.slice(1)
+                  : ''}
+              </Text>
+              {item.price ? (
+                <Text style={{ color: '#ff7043', fontWeight: 'bold' }}>
+                  ₹{(item.price / 100).toFixed(2)}
+                </Text>
+              ) : null}
+              {item.description ? (
+                <Text style={{ color: '#666', fontSize: 14, fontWeight: 'bold' }}>
+                  {item.description}
+                </Text>
+              ) : null}
+              {item.ratings?.aggregatedRating?.rating ? (
+                <Text style={{ color: '#388e3c', fontWeight: 'bold', marginBottom: 2 }}>
+                  ⭐ {item.ratings.aggregatedRating.rating}
+                </Text>
+              ) : null}
+              <View style={styles.counterContainer}>
+                <TouchableOpacity
+                  onPress={() => removeFromCart(item.id)}
+                  style={styles.plusButton}
+                  disabled={getItemCount(item.id) === 0}
+                >
+                  <Ionicons name="remove-circle" size={28} color={getItemCount(item.id) === 0 ? "#ccc" : "#ff7043"} />
+                </TouchableOpacity>
+                <Text style={styles.counterText}>{getItemCount(item.id)}</Text>
+                <TouchableOpacity onPress={() => handleAddToCart(item)} style={styles.plusButton}>
+                  <Ionicons name="add-circle" size={28} color="#ff7043" />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {item.imageId ? (
+              <Image
+                source={{ uri: CDN_URL + item.imageId }}
+                style={styles.menuImage}
+              />
+            ) : null}
+          </View>
+        )}
+        contentContainerStyle={styles.container}
+      />
+
+      {cart.length > 0 && (
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={() => navigation.navigate('CartScreen')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        </TouchableOpacity>
       )}
-    </ScrollView>
-    {cart.length > 0 && (
-      <TouchableOpacity
-        style={styles.checkoutButton}
-        onPress={() => navigation.navigate('CartScreen')}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-      </TouchableOpacity>
-    )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { backgroundColor: '#fff', paddingBottom: 100 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { alignItems: 'center', padding: 16 },
+  restaurantHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
+  },
   restaurantImage: { width: 200, height: 120, borderRadius: 12, marginBottom: 12 },
   restaurantName: { fontSize: 24, fontWeight: 'bold', color: '#ff7043', marginBottom: 4 },
   restaurantDetails: { fontSize: 16, color: '#555', marginBottom: 2 },
@@ -382,12 +391,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#ffe0cc',
-    // Shadow for iOS
     shadowColor: '#ff7043',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 8,
-    // Elevation for Android
     elevation: 4,
   },
   menuItem: {
@@ -399,11 +406,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  menuImage: { 
-    width: 80, 
-    height: 80, 
-    borderRadius: 8, 
-    marginLeft: 12 
+  menuImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginLeft: 12
   },
   counterContainer: { flexDirection: 'row', alignItems: 'center', marginHorizontal: 8 },
   counterText: { fontSize: 18, marginHorizontal: 6, minWidth: 20, textAlign: 'center' },
@@ -414,13 +421,15 @@ const styles = StyleSheet.create({
     color: '#ff7043',
     letterSpacing: 2,
     flex: 1,
+    flexShrink: 1, // Prevents wrapping
+    minWidth: 0,   // Allows shrinking
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 12,
-    paddingTop: 40, // for status bar spacing
+    paddingTop: 40,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
     backgroundColor: '#fff',
@@ -429,7 +438,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    flex: 2,
+    flex: 0,
   },
   iconButton: {
     marginHorizontal: 8,
@@ -471,7 +480,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.2)',
     justifyContent: 'flex-start',
-    alignItems: 'flex-end', // <-- this aligns the menu to the right
+    alignItems: 'flex-end',
   },
   menu: {
     backgroundColor: '#fff',
@@ -487,11 +496,11 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
   },
   menuItemName: {
-  fontWeight: 'bold',
-  color: '#111',
-  fontSize: 18,
-  marginBottom: 2,
-  flexDirection: 'row',
-  alignItems: 'center',
-},
+    fontWeight: 'bold',
+    color: '#111',
+    fontSize: 18,
+    marginBottom: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 });
