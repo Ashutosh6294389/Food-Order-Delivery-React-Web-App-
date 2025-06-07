@@ -34,7 +34,7 @@ The purpose of QuickBite is to provide a seamless food ordering experience, allo
 
 1. **Clone the repository:**
    ```sh
-   git clone <repository-url>
+   git clone https://github.com/Ashutosh6294389/Food-Order-Delivery-React-Web-App-
    cd Food-Order-Delivery-React-Web-App-
    ```
 
