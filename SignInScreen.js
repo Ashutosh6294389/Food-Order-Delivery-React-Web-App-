@@ -66,10 +66,11 @@ export default function SignInScreen({ navigation }) {
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        style={styles.input}
+        style={[styles.input, {marginBottom: 20}]}
         secureTextEntry
       />
       <Button title="Sign In" onPress={handleSignIn} color="#2196F3" />
+      <View style={{height: 16}} />
       <Button
         title="Register"
         onPress={() => navigation.navigate('Register')}

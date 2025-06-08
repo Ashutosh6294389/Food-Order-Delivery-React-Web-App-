@@ -74,7 +74,7 @@ export default function HomeScreen({ navigation }) {
         >
           QuickBite
         </Text>
-        <View style={styles.headerButtons}>
+        <View style={{flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity style={styles.iconButton} onPress={() => { setShowSearch(true); setShowCart(false); }}>
             <Feather name="search" size={28} color="#ff7043" />
           </TouchableOpacity>

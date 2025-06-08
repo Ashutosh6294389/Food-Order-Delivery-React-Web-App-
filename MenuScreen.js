@@ -62,7 +62,7 @@ export default function MenuScreen({ route, navigation }) {
         >
           QuickBite
           </Text>
-        <View style={styles.headerButtons}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Home')}>
             <Feather name="home" size={28} color="#ff7043" />
           </TouchableOpacity>

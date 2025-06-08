@@ -75,6 +75,7 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
       />
       <Button title="Register" onPress={handleRegister} color="#4CAF50" />
+      <View style={{ height: 16 }} />
       <Button
         title="Back to Sign In"
         onPress={() => navigation.navigate('SignIn')}
