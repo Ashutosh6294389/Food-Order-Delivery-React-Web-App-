@@ -133,5 +133,5 @@ See [package.json](package.json) for license information.
 
 ## DEMO VIDEO
 
-https://github.com/user-attachments/assets/b48fd61f-bc10-4938-8a2a-a877d8198f38
+https://drive.google.com/file/d/1T1h0YS0k9Pxn1oOAgb4QLqAAGRIHu1ij/view?usp=share_link
 
